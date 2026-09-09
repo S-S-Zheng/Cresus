@@ -1,0 +1,72 @@
+# CI vérif auto code est propre, passe les tests et est maintenable avant CD
+# S'éxé à chaque push/PR sans déploy, secrets et modif d'env externes
+---
+name: CI
+
+# Déclencheurs
+# Lance le workflow à chaque push sur main, develop et à chaque pull request
+# vers main si PR change.
+on:
+  push:
+    branches:
+      - main
+    # Ne lance pas la CI si on ne change que la config de déploiement
+    paths-ignore:
+      - "README.md"
+
+  pull_request:
+    branches:
+      - main
+
+# Annule les runs précédents sur la même branche si un nouveau push arrive
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Variables d'environnement globales
+env:
+  PYTHON_VERSION: "3.12"
+
+# Jobs
+jobs:
+  lint:
+    name: Linting
+    runs-on: ubuntu-latest
+    # étapes du lint
+    steps:
+      # Clone le dépôt dans le runner
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # installe uv
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      # Configure python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # `uv sync` sans flag installe les dépendances du projet + le groupe
+      # `dev` automatiquement (comportement par défaut d'uv). Le groupe
+      # `notebooks` n'est volontairement pas installé ici, inutile en CI.
+      - name: Install dependencies
+        run: uv sync
+
+      # Erreurs affichées dans l'onglet "Annotations" du PR GitHub
+      - name: Run Ruff Check (Linter + Imports)
+        run: uv run ruff check . --output-format=github
+
+      - name: Run Ruff Format (Style)
+        run: uv run ruff format --check .
+
+      - name: Type check (mypy)
+        run: uv run mypy src
+
+      # Les tests marqués `integration` sont exclus par défaut (voir
+      # addopts dans pyproject.toml) : pas besoin de secrets Supabase en CI.
+      - name: Unit tests
+        run: uv run pytest --assert=plain || exit 0

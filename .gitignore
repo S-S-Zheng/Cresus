@@ -1,0 +1,65 @@
+# Environnement virtuel
+venv/
+env/
+ENV/
+.venv/
+
+# Fichiers de configuration contenant des informations sensibles
+.env
+
+# Fichiers générés
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.cache/
+
+# Fichiers de logs
+*.log
+logs/
+.logfire/
+.ruff_cache
+
+# Fichiers temporaires
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Outils
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+!.vscode/extensions.json
+
+# OS
+.DS_Store
+
+# Notebooks
+.ipynb_checkpoints/
